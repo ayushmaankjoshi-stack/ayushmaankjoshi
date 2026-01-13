@@ -12,7 +12,6 @@
       --primary: #001a33;
       --gold: #d4af37;
       --gold-light: #f1d592;
-      --gold-glow: rgba(212, 175, 55, 0.4);
       --white: #ffffff;
       --text-muted: #9ca3af;
     }
@@ -30,7 +29,6 @@
       position: relative;
     }
 
-    /* Enhanced Ambient Orbs */
     .orb {
       position: absolute;
       width: 600px;
@@ -65,7 +63,6 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Animated Border Glow */
     .container::before {
       content: "";
       position: absolute;
@@ -92,7 +89,6 @@
       background: linear-gradient(to bottom, #ffffff 40%, var(--gold-light));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
     }
 
     .subtitle {
@@ -101,7 +97,6 @@
       text-transform: uppercase;
       color: var(--text-muted);
       margin-bottom: 45px;
-      opacity: 0.9;
     }
 
     input {
@@ -111,18 +106,12 @@
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 22px;
       color: white;
-      font-size: 16px;
+      font-size: 18px;
       text-align: center;
       margin-bottom: 25px;
       box-sizing: border-box;
       outline: none;
-      transition: all 0.3s ease;
-    }
-    
-    input:focus {
-      border-color: var(--gold);
-      background: rgba(255,255,255,0.1);
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+      text-transform: uppercase;
     }
 
     button {
@@ -137,37 +126,32 @@
       text-transform: uppercase;
       cursor: pointer;
       box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: 0.3s;
     }
 
-    button:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4); }
     button:active { transform: scale(0.96); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; transform: scale(1); }
+    button:disabled { opacity: 0.6; cursor: wait; }
 
     .result-box { margin-top: 35px; min-height: 90px; display: flex; justify-content: center; align-items: center; }
 
-    /* Modern Minimal Loader */
     .loader {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border: 3px solid rgba(212, 175, 55, 0.2);
       border-radius: 50%;
       border-top-color: var(--gold);
-      animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      animation: spin 1s linear infinite;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .success-card {
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(255,255,255,0.05));
+      background: rgba(212, 175, 55, 0.1);
       border: 1px solid var(--gold);
       padding: 25px;
       border-radius: 28px;
-      animation: reveal 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards;
       width: 100%;
     }
-
-    @keyframes reveal { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
     .wa-link {
       display: block;
@@ -178,20 +162,14 @@
       border-radius: 20px;
       margin-top: 15px;
       font-weight: 800;
-      box-shadow: 0 8px 15px rgba(37, 211, 102, 0.25);
-      transition: transform 0.2s;
     }
-    .wa-link:hover { transform: translateY(-2px); }
 
-    /* PRESERVED LEGAL DISCLAIMER */
     .disclaimer {
       font-size: 9px;
       color: rgba(255,255,255,0.4);
       margin-top: 40px;
       border-top: 1px solid rgba(255,255,255,0.1);
       padding-top: 20px;
-      position: relative;
-      z-index: 20;
       text-align: justify;
       line-height: 1.4;
     }
@@ -206,7 +184,7 @@
   <h1>GNLU</h1>
   <div class="subtitle">VERIFY TO JOIN STUDENT WHATSAPP</div>
 
-  <input type="tel" id="roll" placeholder="Enter Admit Card Number" autocomplete="off">
+  <input type="text" id="roll" placeholder="ADMIT CARD NUMBER" autocomplete="off">
   <button id="verifyBtn">Verify Status</button>
 
   <div id="result" class="result-box"></div>
@@ -217,73 +195,337 @@
 </div>
 
 <script>
-  const CONFIG = {
-    SHEET_ID: "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM",
-    WHATSAPP_GROUP: "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu"
-  };
+  // Wait for everything to load perfectly
+  window.addEventListener('DOMContentLoaded', () => {
+    const rollInput = document.getElementById("roll");
+    const resultDiv = document.getElementById("result");
+    const verifyBtn = document.getElementById("verifyBtn");
 
-  const CSV_URL = https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pub?output=csv;
+    const CONFIG = {
+      SHEET_ID: "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM",
+      WHATSAPP_GROUP: "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu"
+    };
 
-  const rollInput = document.getElementById("roll");
-  const resultDiv = document.getElementById("result");
-  const verifyBtn = document.getElementById("verifyBtn");
+    // Auto-Uppercase
+    rollInput.addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
 
-  function celebration() {
-    confetti({ 
-      particleCount: 150, 
-      spread: 70, 
-      origin: { y: 0.6 }, 
-      colors: ['#d4af37', '#ffffff', '#f1d592'] 
-    });
-  }
-
-  async function check() {
-    const val = rollInput.value.trim();
-
-    if (!val) {
-      resultDiv.innerHTML = "<p style='color: var(--gold-light);'>Please enter a roll number.</p>";
-      return;
-    }
-
-    verifyBtn.disabled = true;
-    resultDiv.innerHTML = '<div class="loader"></div>';
-
-    try {
-      const response = await fetch(CSV_URL);
-      if (!response.ok) throw new Error();
+    async function checkStatus() {
+      const val = rollInput.value.trim().toUpperCase();
       
-      const csvText = await response.text();
-      const rows = csvText.split(/\r?\n/);
-      
-      const isFound = rows.some(row => {
-        const firstColumn = row.split(',')[0];
-        return firstColumn && firstColumn.replace(/"/g, "").trim() === val;
-      });
-
-      if (isFound) {
-        celebration();
-        resultDiv.innerHTML = `
-          <div class="success-card">
-            <div style="font-size: 32px;">👑</div>
-            <div style="font-weight: 800; font-size: 19px; letter-spacing: 0.5px;">VERIFIED!</div>
-            <p style="font-size: 13px; margin: 15px 0; color: rgba(255,255,255,0.85);">Welcome to GNLU! Join your community below:</p>
-            <a href="${CONFIG.WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN WHATSAPP GROUP</a>
-          </div>`;
-      } else {
-        resultDiv.innerHTML = `
-          <div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; width:100%;'>
-            Roll Number not found in the Round 1 list.
-          </div>`;
+      if (!val) {
+        resultDiv.innerHTML = "<p style='color: var(--gold-light);'>Enter your number first.</p>";
+        return;
       }
-    } catch (e) {
-      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection error. Check your internet.</p>";
-    } finally {
-      verifyBtn.disabled = false;
-    }
-  }
 
-  verifyBtn.addEventListener('click', check);
-  rollInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') check(); });
+      // 1. Loading UI
+      verifyBtn.disabled = true;
+      verifyBtn.innerText = "CHECKING...";
+      resultDiv.innerHTML = '<div class="loader"></div>';
+
+      try {
+        // 2. Fetch Data
+        const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pub?output=csv&t=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Could not reach database");
+
+        const csvData = await response.text();
+        const rows = csvData.split(/\r?\n/);
+        
+        // 3. Search Logic
+        const found = rows.some(row => {
+          const firstCol = row.split(',')[0];
+          return firstCol && firstCol.replace(/"/g, "").trim().toUpperCase() === val;
+        });
+
+        if (found) {
+          if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+          resultDiv.innerHTML = `
+            <div class="success-card">
+              <div style="font-size: 32px;">👑</div>
+              <div style="font-weight: 800; font-size: 19px;">VERIFIED!</div>
+              <a href="${CONFIG.WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN WHATSAPP GROUP</a>
+            </div>`;
+        } else {
+          resultDiv.innerHTML = "<p style='color: rgba(255,255,255,0.6);'>Number not found in Round 1 list.</p>";
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style='color: #ff4d4d;'>Error: ${err.message}. Check if your sheet is 'Published to Web'.</p>`;
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerText = "VERIFY STATUS";
+      }
+    }
+
+    // Attach events
+    verifyBtn.onclick = checkStatus;
+    rollInput.onkeydown = (e) => { if (e.key === 'Enter') checkStatus(); };
+  });
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GNLU | Allotment Portal 2026</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://docs.google.com">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --primary: #001a33;
+      --gold: #d4af37;
+      --gold-light: #f1d592;
+      --white: #ffffff;
+      --text-muted: #9ca3af;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at top right, #002147, #000000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--white);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none; 
+      animation: float 15s infinite alternate ease-in-out;
+    }
+    .orb-1 { top: -200px; left: -200px; }
+    .orb-2 { bottom: -200px; right: -200px; animation-delay: -5s; }
+
+    @keyframes float { 
+      0% { transform: translate(0, 0) scale(1); opacity: 0.5; } 
+      100% { transform: translate(50px, 30px) scale(1.1); opacity: 0.8; } 
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(35px) saturate(160%);
+      -webkit-backdrop-filter: blur(35px) saturate(160%);
+      width: 90%;
+      max-width: 420px;
+      padding: 60px 40px 40px;
+      border-radius: 40px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 50px 100px rgba(0,0,0,0.7);
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: 40px;
+      padding: 1.5px; 
+      background: linear-gradient(135deg, transparent, var(--gold), transparent, var(--gold-light), transparent);
+      background-size: 300% 300%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: shimmer 8s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+
+    h1 {
+      font-size: 48px;
+      margin: 0;
+      letter-spacing: 5px;
+      font-weight: 900;
+      background: linear-gradient(to bottom, #ffffff 40%, var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 45px;
+    }
+
+    input {
+      width: 100%;
+      padding: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 22px;
+      color: white;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 25px;
+      box-sizing: border-box;
+      outline: none;
+      text-transform: uppercase;
+    }
+
+    button {
+      width: 100%;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #000;
+      border: none;
+      border-radius: 22px;
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+      transition: 0.3s;
+    }
+
+    button:active { transform: scale(0.96); }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    .result-box { margin-top: 35px; min-height: 90px; display: flex; justify-content: center; align-items: center; }
+
+    .loader {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(212, 175, 55, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--gold);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success-card {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid var(--gold);
+      padding: 25px;
+      border-radius: 28px;
+      width: 100%;
+    }
+
+    .wa-link {
+      display: block;
+      background: #25D366;
+      color: white;
+      text-decoration: none;
+      padding: 16px;
+      border-radius: 20px;
+      margin-top: 15px;
+      font-weight: 800;
+    }
+
+    .disclaimer {
+      font-size: 9px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 20px;
+      text-align: justify;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+  <h1>GNLU</h1>
+  <div class="subtitle">VERIFY TO JOIN STUDENT WHATSAPP</div>
+
+  <input type="text" id="roll" placeholder="ADMIT CARD NUMBER" autocomplete="off">
+  <button id="verifyBtn">Verify Status</button>
+
+  <div id="result" class="result-box"></div>
+
+  <div class="disclaimer">
+    <strong>LEGAL DISCLAIMER:</strong> This platform is an independent, student-led initiative designed solely to facilitate the coordination of the unofficial student community. It is <strong>not affiliated with, authorized by, or an official representative</strong> of the Gujarat National Law University (GNLU) or the Consortium of NLUs.
+  </div>
+</div>
+
+<script>
+  // Wait for everything to load perfectly
+  window.addEventListener('DOMContentLoaded', () => {
+    const rollInput = document.getElementById("roll");
+    const resultDiv = document.getElementById("result");
+    const verifyBtn = document.getElementById("verifyBtn");
+
+    const CONFIG = {
+      SHEET_ID: "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM",
+      WHATSAPP_GROUP: "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu"
+    };
+
+    // Auto-Uppercase
+    rollInput.addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
+
+    async function checkStatus() {
+      const val = rollInput.value.trim().toUpperCase();
+      
+      if (!val) {
+        resultDiv.innerHTML = "<p style='color: var(--gold-light);'>Enter your number first.</p>";
+        return;
+      }
+
+      // 1. Loading UI
+      verifyBtn.disabled = true;
+      verifyBtn.innerText = "CHECKING...";
+      resultDiv.innerHTML = '<div class="loader"></div>';
+
+      try {
+        // 2. Fetch Data
+        const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pub?output=csv&t=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Could not reach database");
+
+        const csvData = await response.text();
+        const rows = csvData.split(/\r?\n/);
+        
+        // 3. Search Logic
+        const found = rows.some(row => {
+          const firstCol = row.split(',')[0];
+          return firstCol && firstCol.replace(/"/g, "").trim().toUpperCase() === val;
+        });
+
+        if (found) {
+          if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+          resultDiv.innerHTML = `
+            <div class="success-card">
+              <div style="font-size: 32px;">👑</div>
+              <div style="font-weight: 800; font-size: 19px;">VERIFIED!</div>
+              <a href="${CONFIG.WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN WHATSAPP GROUP</a>
+            </div>`;
+        } else {
+          resultDiv.innerHTML = "<p style='color: rgba(255,255,255,0.6);'>Number not found in Round 1 list.</p>";
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style='color: #ff4d4d;'>Error: ${err.message}. Check if your sheet is 'Published to Web'.</p>`;
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerText = "VERIFY STATUS";
+      }
+    }
+
+    // Attach events
+    verifyBtn.onclick = checkStatus;
+    rollInput.onkeydown = (e) => { if (e.key === 'Enter') checkStatus(); };
+  });
 </script>
 </body>
 </html>
