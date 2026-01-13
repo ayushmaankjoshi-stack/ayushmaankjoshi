@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GNLU | Whatsapp Verification</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://docs.google.com">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
@@ -29,6 +27,7 @@
       position: relative;
     }
 
+    /* Background Orbs */
     .orb {
       position: absolute;
       width: 400px;
@@ -44,11 +43,12 @@
 
     @keyframes float { from { transform: translate(0, 0); } to { transform: translate(100px, 50px); } }
 
+    /* Main Container */
     .container {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
-      width: 90%;
+      width: 100%;
       max-width: 400px;
       padding: 50px 35px;
       border-radius: 35px;
@@ -56,9 +56,9 @@
       position: relative;
       z-index: 10;
       box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-      box-sizing: border-box;
     }
 
+    /* Shimmering Border */
     .container::before {
       content: "";
       position: absolute;
@@ -109,13 +109,11 @@
       position: relative;
       z-index: 20;
       outline: none;
-      transition: all 0.3s ease;
+      transition: border 0.3s;
     }
-    
+
     input:focus {
-      border-color: var(--gold);
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--gold);
     }
 
     button {
@@ -129,25 +127,44 @@
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
-      transition: transform 0.2s, opacity 0.2s;
       position: relative;
       z-index: 20;
+      transition: transform 0.2s, opacity 0.2s;
     }
 
-    button:active { transform: scale(0.97); }
-    button:hover { opacity: 0.9; }
+    button:active { transform: scale(0.98); }
 
-    .result-box { margin-top: 30px; min-height: 80px; }
+    .result-box { margin-top: 30px; min-height: 100px; display: flex; justify-content: center; align-items: center; }
+
+    /* New Spinner Style */
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(212, 175, 55, 0.1);
+      border-top: 3px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
     .success-card {
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255,255,255,0.05));
       border: 1px solid var(--gold);
       padding: 20px;
       border-radius: 25px;
-      animation: fadeIn 0.5s ease-out;
+      width: 100%;
     }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .wa-link {
       display: block;
@@ -159,9 +176,7 @@
       margin-top: 15px;
       font-weight: 800;
       box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
-      transition: transform 0.2s;
     }
-    .wa-link:hover { transform: translateY(-2px); }
 
     .disclaimer {
       font-size: 9px;
@@ -186,87 +201,76 @@
   <div class="subtitle">VERIFY TO JOIN STUDENT WHATSAPP</div>
 
   <input type="tel" id="roll" placeholder="Enter Admit Card Number" autocomplete="off">
-  <button id="verifyBtn">Verify Status</button>
+  <button id="verifyBtn" onclick="check()">Verify Status</button>
 
   <div id="result" class="result-box"></div>
 
   <div class="disclaimer">
-    <strong>LEGAL DISCLAIMER:</strong> This platform is an independent, student-led initiative designed solely to facilitate the coordination of the unofficial student community. It is <strong>not affiliated with, authorized by, or an official representative</strong> of the Gujarat National Law University (GNLU) or the Consortium of NLUs.
+    <strong>LEGAL DISCLAIMER:</strong> This platform is an independent, student-led initiative designed solely to facilitate the coordination of the unofficial student community. It is <strong>not affiliated with, authorized by, or an official representative</strong> of the Gujarat National Law University (GNLU) or the Consortium of NLUs. All users are advised to verify their allotment status exclusively via the official university admission portal.
   </div>
 </div>
 
 <script>
-  const CONFIG = {
-    SHEET_ID: "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM",
-    WHATSAPP_GROUP: "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu"
-  };
-
-  const CSV_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pub?output=csv`;
-
-  // Cache DOM elements
-  const rollInput = document.getElementById("roll");
-  const resultDiv = document.getElementById("result");
-  const verifyBtn = document.getElementById("verifyBtn");
+  const SHEET_ID = "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM";
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+  const WHATSAPP_GROUP = "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu";
 
   function celebration() {
-    confetti({ 
-      particleCount: 150, 
-      spread: 70, 
-      origin: { y: 0.6 }, 
-      colors: ['#d4af37', '#ffffff', '#f1d592'] 
-    });
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#d4af37', '#ffffff', '#f1d592'] });
   }
 
   async function check() {
-    const val = rollInput.value.trim();
+    const rollInput = document.getElementById("roll").value.trim();
+    const resultDiv = document.getElementById("result");
+    const btn = document.getElementById("verifyBtn");
 
-    if (!val) {
-      resultDiv.innerHTML = "<p style='color: #f1d592;'>Please enter a roll number.</p>";
+    if (!rollInput) {
+      resultDiv.innerHTML = "<p style='color: #f1d592;'>Input required.</p>";
       return;
     }
 
-    resultDiv.innerHTML = "<p style='opacity:0.6'>Checking database...</p>";
+    // Show Loading Spinner
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+    resultDiv.innerHTML = `
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p style="opacity:0.6; font-size: 13px; margin: 0;">Verifying credentials...</p>
+      </div>`;
 
     try {
       const response = await fetch(CSV_URL);
-      if (!response.ok) throw new Error('Fetch failed');
-      
       const csvText = await response.text();
-      const rows = csvText.split(/\r?\n/);
+      const rows = csvText.split(/\r?\n/).filter(row => row.trim() !== "");
       
-      // Efficient search using some()
-      const isFound = rows.some(row => {
-        const firstColumn = row.split(',')[0];
-        return firstColumn && firstColumn.replace(/"/g, "").trim() === val;
-      });
+      let found = false;
+      for (let i = 0; i < rows.length; i++) {
+        const cleanRow = rows[i].replace(/"/g, "");
+        if (cleanRow.includes(rollInput)) {
+          found = true;
+          break;
+        }
+      }
 
-      if (isFound) {
+      if (found) {
         celebration();
         resultDiv.innerHTML = `
           <div class="success-card">
             <div style="font-size: 30px;">👑</div>
             <div style="font-weight: 800; font-size: 18px;">VERIFIED!</div>
-            <p style="font-size: 13px; margin: 15px 0;">Welcome to GNLU! Click below to join your batchmates:</p>
-            <a href="${CONFIG.WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN WHATSAPP GROUP</a>
+            <p style="font-size: 13px; margin: 15px 0;">👇 Click below button to join the unofficial GNLU 31 WhatsApp group 👇</p>
+            <a href="${WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN GROUP</a>
           </div>`;
       } else {
-        resultDiv.innerHTML = `
-          <div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px;'>
-            Roll Number not found in the Round 1 list.
-          </div>`;
+        resultDiv.innerHTML = "<div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; width: 100%;'>Not found in Round 1.</div>";
       }
     } catch (e) {
-      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection error. Check your internet.</p>";
+      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection failed. Try again.</p>";
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = "1";
     }
   }
-
-  // Listen for click
-  verifyBtn.addEventListener('click', check);
-
-  // Listen for "Enter" key
-  rollInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') check();
-  });
 </script>
 </body>
 </html>
