@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GNLU | Allotment Portal 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --primary: #001a33;
+      --gold: #d4af37;
+      --gold-light: #f1d592;
+      --white: #ffffff;
+      --text-muted: #9ca3af;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at top right, #002147, #000000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--white);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .orb {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none; 
+      animation: float 20s infinite alternate;
+    }
+    .orb-1 { top: -100px; left: -100px; }
+    .orb-2 { bottom: -100px; right: -100px; animation-delay: -5s; }
+
+    @keyframes float { from { transform: translate(0, 0); } to { transform: translate(100px, 50px); } }
+
+    .container {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      width: 100%;
+      max-width: 400px;
+      padding: 50px 35px;
+      border-radius: 35px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 35px;
+      padding: 2px; 
+      background: linear-gradient(135deg, transparent, var(--gold), transparent, var(--gold), transparent);
+      background-size: 300% 300%;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: shimmer 6s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+    h1 {
+      font-size: 42px;
+      margin: 0;
+      letter-spacing: 4px;
+      font-weight: 800;
+      background: linear-gradient(to bottom, #fff 30%, var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    input {
+      width: 100%;
+      padding: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      color: white;
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 25px;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 20;
+    }
+
+    button {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #000;
+      border: none;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      z-index: 20;
+    }
+
+    .result-box { margin-top: 30px; min-height: 80px; }
+
+    .success-card {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255,255,255,0.05));
+      border: 1px solid var(--gold);
+      padding: 20px;
+      border-radius: 25px;
+    }
+
+    .wa-link {
+      display: block;
+      background: #25D366;
+      color: white;
+      text-decoration: none;
+      padding: 15px;
+      border-radius: 18px;
+      margin-top: 15px;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+    }
+
+    .disclaimer {
+      font-size: 9px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 20px;
+      position: relative;
+      z-index: 20;
+      text-align: justify;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+  <h1>GNLU</h1>
+  <div class="subtitle">VERIFY TO JOIN STUDENT WHATSAPP</div>
+
+  <input type="tel" id="roll" placeholder="Enter Admit Card Number" autocomplete="off">
+  <button onclick="check()">Verify Status</button>
+
+  <div id="result" class="result-box"></div>
+
+  <div class="disclaimer">
+    <strong>LEGAL DISCLAIMER:</strong> This platform is an independent, student-led initiative designed solely to facilitate the coordination of the unofficial student community. It is <strong>not affiliated with, authorized by, or an official representative</strong> of the Gujarat National Law University (GNLU) or the Consortium of NLUs. All users are advised to verify their allotment status exclusively via the official university admission portal.
+  </div>
+</div>
+
+<script>
+  const SHEET_ID = "1a3l31KCPoOzFdGBSSl0xGmcNjWmmRCR8nc6Pp8u1AXM";
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+  const WHATSAPP_GROUP = "https://chat.whatsapp.com/HzfCnllTchv65ao0e2RVyu";
+
+  function celebration() {
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#d4af37', '#ffffff', '#f1d592'] });
+  }
+
+  async function check() {
+    const rollInput = document.getElementById("roll").value.trim();
+    const resultDiv = document.getElementById("result");
+
+    if (!rollInput) {
+      resultDiv.innerHTML = "<p style='color: #f1d592;'>Input required.</p>";
+      return;
+    }
+
+    resultDiv.innerHTML = "<p style='opacity:0.6'>Verifying...</p>";
+
+    try {
+      const response = await fetch(CSV_URL);
+      const csvText = await response.text();
+      const rows = csvText.split(/\r?\n/).filter(row => row.trim() !== "");
+      
+      let found = false;
+      for (let i = 0; i < rows.length; i++) {
+        const cleanRow = rows[i].replace(/"/g, "");
+        if (cleanRow.includes(rollInput)) {
+          found = true;
+          break;
+        }
+      }
+
+      if (found) {
+        celebration();
+        resultDiv.innerHTML = `
+          <div class="success-card">
+            <div style="font-size: 30px;">👑</div>
+            <div style="font-weight: 800; font-size: 18px;">VERIFIED!</div>
+            <p style="font-size: 13px; margin: 15px 0;">👇 Click below button to join the unofficial GNLU 31 WhatsApp group 👇</p>
+            <a href="${WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN GROUP</a>
+          </div>`;
+      } else {
+        resultDiv.innerHTML = "<div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px;'>Not found in Round 1.</div>";
+      }
+    } catch (e) {
+      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection failed.</p>";
+    }
+  }
+</script>
+</body>
+</html>
