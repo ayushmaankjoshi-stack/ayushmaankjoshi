@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GNLU | Whatsapp Verification</title>
+  <title>GNLU | Allotment Portal 2026</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
@@ -27,7 +27,6 @@
       position: relative;
     }
 
-    /* Background Orbs */
     .orb {
       position: absolute;
       width: 400px;
@@ -43,7 +42,6 @@
 
     @keyframes float { from { transform: translate(0, 0); } to { transform: translate(100px, 50px); } }
 
-    /* Main Container */
     .container {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(25px);
@@ -58,7 +56,6 @@
       box-shadow: 0 40px 100px rgba(0,0,0,0.8);
     }
 
-    /* Shimmering Border */
     .container::before {
       content: "";
       position: absolute;
@@ -108,12 +105,6 @@
       box-sizing: border-box;
       position: relative;
       z-index: 20;
-      outline: none;
-      transition: border 0.3s;
-    }
-
-    input:focus {
-      border: 1px solid var(--gold);
     }
 
     button {
@@ -129,41 +120,15 @@
       cursor: pointer;
       position: relative;
       z-index: 20;
-      transition: transform 0.2s, opacity 0.2s;
     }
 
-    button:active { transform: scale(0.98); }
-
-    .result-box { margin-top: 30px; min-height: 100px; display: flex; justify-content: center; align-items: center; }
-
-    /* New Spinner Style */
-    .spinner {
-      width: 30px;
-      height: 30px;
-      border: 3px solid rgba(212, 175, 55, 0.1);
-      border-top: 3px solid var(--gold);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    .result-box { margin-top: 30px; min-height: 80px; }
 
     .success-card {
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255,255,255,0.05));
       border: 1px solid var(--gold);
       padding: 20px;
       border-radius: 25px;
-      width: 100%;
     }
 
     .wa-link {
@@ -201,7 +166,7 @@
   <div class="subtitle">VERIFY TO JOIN STUDENT WHATSAPP</div>
 
   <input type="tel" id="roll" placeholder="Enter Admit Card Number" autocomplete="off">
-  <button id="verifyBtn" onclick="check()">Verify Status</button>
+  <button onclick="check()">Verify Status</button>
 
   <div id="result" class="result-box"></div>
 
@@ -222,21 +187,13 @@
   async function check() {
     const rollInput = document.getElementById("roll").value.trim();
     const resultDiv = document.getElementById("result");
-    const btn = document.getElementById("verifyBtn");
 
     if (!rollInput) {
       resultDiv.innerHTML = "<p style='color: #f1d592;'>Input required.</p>";
       return;
     }
 
-    // Show Loading Spinner
-    btn.disabled = true;
-    btn.style.opacity = "0.5";
-    resultDiv.innerHTML = `
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <p style="opacity:0.6; font-size: 13px; margin: 0;">Verifying credentials...</p>
-      </div>`;
+    resultDiv.innerHTML = "<p style='opacity:0.6'>Verifying...</p>";
 
     try {
       const response = await fetch(CSV_URL);
@@ -262,13 +219,10 @@
             <a href="${WHATSAPP_GROUP}" class="wa-link" target="_blank">JOIN GROUP</a>
           </div>`;
       } else {
-        resultDiv.innerHTML = "<div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; width: 100%;'>Not found in Round 1.</div>";
+        resultDiv.innerHTML = "<div style='color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px;'>Not found in Round 1.</div>";
       }
     } catch (e) {
-      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection failed. Try again.</p>";
-    } finally {
-      btn.disabled = false;
-      btn.style.opacity = "1";
+      resultDiv.innerHTML = "<p style='color: #ff4d4d;'>Connection failed.</p>";
     }
   }
 </script>
